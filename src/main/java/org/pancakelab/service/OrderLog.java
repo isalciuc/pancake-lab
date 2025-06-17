@@ -6,6 +6,7 @@ import org.pancakelab.model.pancakes.PancakeRecipe;
 import java.util.List;
 
 public class OrderLog {
+
     private static final StringBuilder log = new StringBuilder();
 
     public static void logAddPancake(Order order, String description, List<PancakeRecipe> pancakes) {
