@@ -1,0 +1,131 @@
+@startuml PancakeLab
+
+' Title
+title Pancake Lab - Class Diagram
+
+' Styling
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam packageFontStyle bold
+skinparam packageStyle rectangle
+
+' Packages
+package "org.pancakelab.model" {
+  class Order {
+    - id: UUID
+    - building: int
+    - room: int
+    + Order(building: int, room: int)
+    + getId(): UUID
+    + getBuilding(): int
+    + getRoom(): int
+    + equals(Object): boolean
+    + hashCode(): int
+    + toString(): String
+  }
+}
+
+package "org.pancakelab.model.pancakes" {
+  interface PancakeRecipe {
+    + {abstract} getOrderId(): UUID
+    + {abstract} setOrderId(orderId: UUID): void
+    + {abstract} ingredients(): List<String>
+    + description(): String
+  }
+
+  class Pancake implements PancakeRecipe {
+    - orderId: UUID
+    - ingredients: List<String>
+    # Pancake()
+    + getOrderId(): UUID
+    + setOrderId(orderId: UUID): void
+    + ingredients(): List<String>
+    + addIngredient(ingredient: String): void
+    + description(): String
+  }
+
+  class PancakeBuilder {
+    - pancake: Pancake
+    + PancakeBuilder()
+    + withDarkChocolate(): PancakeBuilder
+    + withMilkChocolate(): PancakeBuilder
+    + withWhippedCream(): PancakeBuilder
+    + withHazelnuts(): PancakeBuilder
+    + withIngredient(ingredient: String): PancakeBuilder
+    + forOrder(orderId: UUID): PancakeBuilder
+    + build(): Pancake
+  }
+
+  class Delivery {
+    - order: Order
+    - pancakes: List<PancakeRecipe>
+    + Delivery(order: Order, pancakes: List<PancakeRecipe>)
+    + getOrder(): Order
+    + getPancakes(): List<PancakeRecipe>
+  }
+}
+
+package "org.pancakelab.service" {
+  class PancakeService {
+    - orders: List<Order>
+    - completedOrders: Set<UUID>
+    - preparedOrders: Set<UUID>
+    - pancakes: List<PancakeRecipe>
+    - lock: ReadWriteLock
+    + createOrder(building: int, room: int): Order
+    + addDarkChocolatePancake(orderId: UUID, count: int): void
+    + addMilkChocolatePancake(orderId: UUID, count: int): void
+    + addMilkChocolateHazelnutsPancake(orderId: UUID, count: int): void
+    + addCustomPancake(orderId: UUID, builder: PancakeBuilder): void
+    + viewOrder(orderId: UUID): List<String>
+    + getOrderPancakes(orderId: UUID): List<PancakeRecipe>
+    - addPancake(pancake: PancakeRecipe, order: Order): void
+    + removePancakes(description: String, orderId: UUID, count: int): void
+    + cancelOrder(orderId: UUID): void
+    + completeOrder(orderId: UUID): void
+    + listCompletedOrders(): Set<UUID>
+    + prepareOrder(orderId: UUID): void
+    + listPreparedOrders(): Set<UUID>
+    + deliverOrder(orderId: UUID): Delivery
+    - findOrderById(orderId: UUID): Order
+  }
+
+  class OrderLog {
+    - log: StringBuilder {static}
+    + logAddPancake(order: Order, description: String, pancakes: List<PancakeRecipe>): void {static}
+    + logRemovePancakes(order: Order, description: String, count: int, pancakes: List<PancakeRecipe>): void {static}
+    + logCancelOrder(order: Order, pancakes: List<PancakeRecipe>): void {static}
+    + logDeliverOrder(order: Order, pancakes: List<PancakeRecipe>): void {static}
+  }
+}
+
+package "org.pancakelab.utils" {
+  class ValidationUtils {
+    - MIN_BUILDING_NUMBER: int {static}
+    - MAX_BUILDING_NUMBER: int {static}
+    - MIN_ROOM_NUMBER: int {static}
+    - MAX_ROOM_NUMBER: int {static}
+    - ValidationUtils()
+    + validateBuilding(building: int): void {static}
+    + validateRoom(room: int): void {static}
+    + validateCount(count: int): void {static}
+    + validateNotNull(object: Object, name: String): void {static}
+    + validateNotEmpty(string: String, name: String): void {static}
+    + validateOrderId(id: UUID): void {static}
+  }
+}
+
+' Relationships
+Order "1" -- "*" PancakeRecipe : ordered >
+Delivery "1" -- "1" Order : contains >
+Delivery "1" -- "*" PancakeRecipe : contains >
+PancakeBuilder ..> Pancake : creates >
+PancakeService ..> Order : manages >
+PancakeService ..> PancakeRecipe : manages >
+PancakeService ..> Delivery : creates >
+PancakeService ..> OrderLog : uses >
+PancakeService ..> ValidationUtils : uses >
+Order ..> ValidationUtils : uses >
+Pancake ..|> PancakeRecipe : implements
+
+@enduml

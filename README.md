@@ -37,3 +37,7 @@ The Sensei has put forth some conditions:
 
 
 Start now your assignment and save the Dojo.
+
+## Class Diagram
+
+![Class Diagram](docs/class-diagram.svg)
